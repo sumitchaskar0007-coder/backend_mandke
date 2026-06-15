@@ -8,38 +8,14 @@ import { admissionRouter } from "./routes/admissionRoutes.js";
 export const app = express();
 
 app.use(helmet());
-
-const allowedOrigins = [
-  "http://mandkecollege.com",
-  "https://mandkecollege.com",
-  "http://www.mandkecollege.com",
-  "https://www.mandkecollege.com",
-  "http://localhost:5173",
-  "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
+    origin: process.env.FRONTEND_URL || "http://mandkecollege.com",
     credentials: true,
   })
 );
-
 app.use(express.json({ limit: "1mb" }));
-
-app.use(
-  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
-);
-
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   "/api/admissions",
   rateLimit({
@@ -51,28 +27,18 @@ app.use(
 );
 
 app.get("/api/health", (_req, res) => {
-  res.json({
-    status: "ok",
-    message: "Mandke College API Running",
-  });
+  res.json({ status: "ok" });
 });
 
 app.use("/api/admissions", admissionRouter);
 
 app.use((_req, res) => {
-  res.status(404).json({
-    message: "Route not found",
-  });
+  res.status(404).json({ message: "Route not found" });
 });
 
 app.use((error, _req, res, _next) => {
   console.error(error);
-
   res.status(500).json({
     message: "Unable to process the admission application",
-    error:
-      process.env.NODE_ENV === "development"
-        ? error.message
-        : undefined,
   });
 });
