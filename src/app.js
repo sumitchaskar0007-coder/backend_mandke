@@ -15,16 +15,14 @@ const allowedOrigins = [
   "http://www.mandkecollege.com",
   "https://www.mandkecollege.com",
   "http://localhost:5173",
-  "http://localhost:3000",
+  "http://127.0.0.1:5173",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
